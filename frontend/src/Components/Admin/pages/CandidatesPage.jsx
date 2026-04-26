@@ -104,7 +104,7 @@ const CandidatesPage = () => {
                     <h2>Candidates</h2>
                     <p>Manage election candidates</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <button className="btn btn-primary" onClick={() => { fetchData(); setShowModal(true); }}>
                     Add Candidate
                 </button>
             </div>
