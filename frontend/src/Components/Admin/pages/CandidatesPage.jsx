@@ -24,15 +24,17 @@ const CandidatesPage = () => {
     const fetchData = async () => {
         try {
             console.log('Fetching data...');
+            console.log('Token being sent:', getAuthHeaders());
             const [candidatesRes, electionsRes] = await Promise.all([
                 axios.get(api.getCandidates, { headers: getAuthHeaders() }),
                 axios.get(api.getActiveElections, { headers: getAuthHeaders() }),
             ]);
-            console.log('Candidates response:', candidatesRes.data);
-            console.log('Elections response:', electionsRes.data);
+            console.log('Candidates response:', candidatesRes);
+            console.log('Elections response:', electionsRes);
+            console.log('Elections response.data:', electionsRes?.data);
+            console.log('Elections response.data.data:', electionsRes?.data?.data);
             setCandidates(candidatesRes.data?.data || []);
             setElections(electionsRes.data?.data || []);
-            console.log('Elections state after set:', electionsRes.data?.data || []);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {

@@ -156,9 +156,12 @@ const getElections = async (req, res, next) => {
 }
 const getActiveElections = async (req, res, next) => {
     try {
-        const today = new Date();       //today's date
+        const today = new Date();
+        console.log('getActiveElections - today:', today);
         await elections.updateMany({ ending_date: { $lt: today } }, { $set: { status: "expired" } }).lean();
         const activeElections = await elections.find({ status: "active" });
+        console.log('getActiveElections - found:', activeElections.length, 'active elections');
+        console.log('getActiveElections - data:', JSON.stringify(activeElections));
         if (activeElections.length > 0) {
             return res.status(200).json({ error: false, message: 'active elections fetched succesfully', data: activeElections })
         }
