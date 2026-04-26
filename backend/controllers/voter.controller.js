@@ -68,10 +68,12 @@ const getResultMiddleware = async (req, res, next) => {
 
     try {
         let result = []
-        const candidates = await fetch('http://localhost:4000/api/onlinevoting/get-election-candidates')
+        const candidatesResponse = await fetch('http://localhost:4000/api/onlinevoting/get-election-candidates')
             .then(response => response.json())
 
-        for (let candidate of candidates.data) {
+        const candidatesData = candidatesResponse?.data || [];
+
+        for (let candidate of candidatesData) {
             const votes = await voting.find({ candidate_id: candidate._id }).lean().countDocuments();
             result.push({ ...candidate, votes })
         }
@@ -79,7 +81,7 @@ const getResultMiddleware = async (req, res, next) => {
 
             return res.status(200).json({ error: false, message: 'Fetched result succesfully', data: result })
         }
-        return res.status(200).json({ error: true, message: 'Fetched result succesfully' })
+        return res.status(200).json({ error: true, message: 'No results found' })
     }
     catch (error) {
         console.log(error);
