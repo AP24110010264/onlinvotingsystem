@@ -110,7 +110,7 @@ const CandidatesPage = () => {
                     <h2>Candidates</h2>
                     <p>Manage election candidates</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => { console.log('Opening modal, elections state:', elections); fetchData(); setShowModal(true); }}>
+                <button className="btn btn-primary" onClick={async () => { console.log('Opening modal, elections state:', elections); await fetchData(); setShowModal(true); }}>
                     Add Candidate
                 </button>
             </div>
