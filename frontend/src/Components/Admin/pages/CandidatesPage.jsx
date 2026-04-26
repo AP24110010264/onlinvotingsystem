@@ -25,18 +25,31 @@ const CandidatesPage = () => {
         try {
             console.log('Fetching data...');
             console.log('Token being sent:', getAuthHeaders());
-            const [candidatesRes, electionsRes] = await Promise.all([
-                axios.get(api.getCandidates, { headers: getAuthHeaders() }),
-                axios.get(api.getActiveElections, { headers: getAuthHeaders() }),
-            ]);
-            console.log('Candidates response:', candidatesRes);
-            console.log('Elections response:', electionsRes);
-            console.log('Elections response.data:', electionsRes?.data);
-            console.log('Elections response.data.data:', electionsRes?.data?.data);
-            setCandidates(candidatesRes.data?.data || []);
-            setElections(electionsRes.data?.data || []);
+            const token = getAuthHeaders();
+            console.log('Active elections URL:', api.getActiveElections);
+            console.log('Headers:', token);
+
+            const electionsRes = await axios.get(api.getActiveElections, { headers: token });
+            console.log('Elections response status:', electionsRes.status);
+            console.log('Elections response data:', electionsRes.data);
+
+            if (electionsRes.data && electionsRes.data.data) {
+                console.log('Setting elections to:', electionsRes.data.data);
+                setElections(electionsRes.data.data);
+            } else {
+                console.log('No data field in response');
+                setElections([]);
+            }
+
+            const candidatesRes = await axios.get(api.getCandidates, { headers: token });
+            if (candidatesRes.data && candidatesRes.data.data) {
+                setCandidates(candidatesRes.data.data);
+            } else {
+                setCandidates([]);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
+            console.error('Error response:', error.response);
         } finally {
             setIsLoading(false);
         }
@@ -180,10 +193,9 @@ const CandidatesPage = () => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label>Election</label>
+                                <label>Election (Debug: {elections?.length})</label>
                                 <select name="election_id" value={formData.election_id} onChange={handleChange}>
                                     <option value="">Select Election</option>
-                                    {console.log('Rendering dropdown, elections:', elections)}
                                     {elections && elections.length > 0 ? elections.map((election) => (
                                         <option key={election._id} value={election._id}>
                                             {election.election_topic}
