@@ -33,25 +33,26 @@ let UserRegistrion = async (req, res, next) => {
     }
 }
 
-let userLogin = async (req, res, next) => {       //user login controller
+let userLogin = async (req, res, next) => {
     try {
         let { voter_id, password } = req.body
 
-        if (!password || !(voter_id)) {      //fileds validation
+        if (!password || !(voter_id)) {
             return res.status(400).json({ error: true, message: "All fileds are mandatory" })
         }
-        let isUserAvailable = await Users.findOne({ voter_id })     //Checking user available
-        if (isUserAvailable) {      //user avalilabile
-            if (await bcrypt.compareSync(password, isUserAvailable.password)) {     //comparing passwprds
+        let isUserAvailable = await Users.findOne({ voter_id })
+        if (isUserAvailable) {
+            if (await bcrypt.compareSync(password, isUserAvailable.password)) {
+                const { password: _, ...userWithoutPassword } = isUserAvailable.toObject();
                 const token = jwt.sign(
                     { voter_id: isUserAvailable.voter_id, role: isUserAvailable.role },
                     process.env.JWT_SECRET,
                     { expiresIn: '24h' }
                 );
                 if (isUserAvailable.role === "admin") {
-                    return res.status(200).json({ error: false, message: "Admin login successfull", data: isUserAvailable, token })
+                    return res.status(200).json({ error: false, message: "Admin login successfull", data: userWithoutPassword, token })
                 } else {
-                    return res.status(200).json({ error: false, message: "Voter login successfull", data: isUserAvailable, token })
+                    return res.status(200).json({ error: false, message: "Voter login successfull", data: userWithoutPassword, token })
                 }
             }
             return res.status(400).json({ error: true, message: "Invalid credentials" })
