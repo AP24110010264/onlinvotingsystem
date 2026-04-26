@@ -89,11 +89,12 @@ const AddCandidates = () => {
             return;
         }
         try {
+            const token = localStorage.getItem('token');
             const electionsUploaded = await axios.post(
                 'http://localhost:4000/api/onlinevoting/addcandidate',
                 formData,
                 {
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 }
             );
             setFormData({

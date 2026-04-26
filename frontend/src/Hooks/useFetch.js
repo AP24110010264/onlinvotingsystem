@@ -8,7 +8,9 @@ const UseFetch = (api_url, options) => {
         let fetch = async () => {
             try {
                 setLoading(true)
-                let { data } = await axios.get(api_url)
+                const token = localStorage.getItem('token');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                let { data } = await axios.get(api_url, { headers })
                 setApiData(data)
                 setLoading(false)
             } catch (error) {

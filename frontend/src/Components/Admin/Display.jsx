@@ -8,7 +8,10 @@ const Display = ({ elections, setElections }) => {
     const deleteElection = async (id) => {
         try {
             setElections((previousElections) => previousElections.filter((election) => election?._id !== id))
-            await axios.delete(`http://localhost:4000/api/onlinevoting/delete-election/${id}`)
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:4000/api/onlinevoting/delete-election/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
             console.log(elections);
             const { data } = await axios.get('http://localhost:4000/api/onlinevoting/get-elections');
             setElections(data)

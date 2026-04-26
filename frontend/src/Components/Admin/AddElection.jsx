@@ -52,7 +52,7 @@ const AddElection = () => {
         }
         return errors
     }
-    const addElectionSubmitHandler = async (e) => {       //onsubmit handler
+    const addElectionSubmitHandler = async (e) => {
         e.preventDefault()
         try {
             let validation = validateElectionInputs(electionFormData)
@@ -61,7 +61,10 @@ const AddElection = () => {
                 return
             } else {
                 console.log("Election added successfully");
-                let electionsAddeddata = await axios.post("http://localhost:4000/api/onlinevoting/addelection", electionFormData)
+                const token = localStorage.getItem('token');
+                let electionsAddeddata = await axios.post("http://localhost:4000/api/onlinevoting/addelection", electionFormData, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
                 if (electionsAddeddata?.data?.error === true) {
                     alert(electionsAddeddata?.data?.message)
                 }

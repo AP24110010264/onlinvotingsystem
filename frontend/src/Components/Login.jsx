@@ -30,10 +30,10 @@ const Login = () => {
         return errors
     }
 
-    const onSubmitHandler = async (e) => {      
+    const onSubmitHandler = async (e) => {
         e.preventDefault();
         let validation = validateLoginForm(formData);
-        if (Object.keys(validation).length > 0) {      
+        if (Object.keys(validation).length > 0) {
             setErrors(validation)
             return
         }
@@ -43,7 +43,12 @@ const Login = () => {
             setLoginData(data)
             setIsLoading(false)
 
-            if (data?.data?.role === "admin") {     
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.data));
+            }
+
+            if (data?.data?.role === "admin") {
                 navigateFunc('/Admin', { state: data })
             } else {
                 navigateFunc('/Voting', { state: data })

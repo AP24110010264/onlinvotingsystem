@@ -2,6 +2,7 @@ const Users = require('../models/user.model')
 const elections = require('../models/election.model')
 const candidates = require('../models/candidate.model')
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const votingModel = require('../models/voting.model')
 let UserRegistrion = async (req, res, next) => {
     try {
@@ -42,10 +43,15 @@ let userLogin = async (req, res, next) => {       //user login controller
         let isUserAvailable = await Users.findOne({ voter_id })     //Checking user available
         if (isUserAvailable) {      //user avalilabile
             if (await bcrypt.compareSync(password, isUserAvailable.password)) {     //comparing passwprds
+                const token = jwt.sign(
+                    { voter_id: isUserAvailable.voter_id, role: isUserAvailable.role },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
                 if (isUserAvailable.role === "admin") {
-                    return res.status(200).json({ error: false, message: "Admin login successfull", data: isUserAvailable })
+                    return res.status(200).json({ error: false, message: "Admin login successfull", data: isUserAvailable, token })
                 } else {
-                    return res.status(200).json({ error: false, message: "Voter login successfull", data: isUserAvailable })
+                    return res.status(200).json({ error: false, message: "Voter login successfull", data: isUserAvailable, token })
                 }
             }
             return res.status(400).json({ error: true, message: "Invalid credentials" })
