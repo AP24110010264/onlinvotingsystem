@@ -23,12 +23,16 @@ const CandidatesPage = () => {
 
     const fetchData = async () => {
         try {
+            console.log('Fetching data...');
             const [candidatesRes, electionsRes] = await Promise.all([
                 axios.get(api.getCandidates, { headers: getAuthHeaders() }),
                 axios.get(api.getActiveElections, { headers: getAuthHeaders() }),
             ]);
+            console.log('Candidates response:', candidatesRes.data);
+            console.log('Elections response:', electionsRes.data);
             setCandidates(candidatesRes.data?.data || []);
             setElections(electionsRes.data?.data || []);
+            console.log('Elections state after set:', electionsRes.data?.data || []);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -104,7 +108,7 @@ const CandidatesPage = () => {
                     <h2>Candidates</h2>
                     <p>Manage election candidates</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => { fetchData(); setShowModal(true); }}>
+                <button className="btn btn-primary" onClick={() => { console.log('Opening modal, elections state:', elections); fetchData(); setShowModal(true); }}>
                     Add Candidate
                 </button>
             </div>
@@ -177,6 +181,7 @@ const CandidatesPage = () => {
                                 <label>Election</label>
                                 <select name="election_id" value={formData.election_id} onChange={handleChange}>
                                     <option value="">Select Election</option>
+                                    {console.log('Rendering dropdown, elections:', elections)}
                                     {elections && elections.length > 0 ? elections.map((election) => (
                                         <option key={election._id} value={election._id}>
                                             {election.election_topic}
