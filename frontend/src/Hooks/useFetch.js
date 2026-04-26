@@ -1,26 +1,32 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { getAuthHeaders } from '../config/api';
 
-const UseFetch = (api_url, options) => {
-    const [apiData, setApiData] = useState();
-    const [Loading, setLoading] = useState(false)
+const useFetch = (url, options = {}) => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     useEffect(() => {
-        let fetch = async () => {
+        const fetchData = async () => {
             try {
-                setLoading(true)
-                const token = localStorage.getItem('token');
-                const headers = token ? { Authorization: `Bearer ${token}` } : {};
-                let { data } = await axios.get(api_url, { headers })
-                setApiData(data)
-                setLoading(false)
-            } catch (error) {
-                console.log(error.message);
-                setLoading(false)
+                setLoading(true);
+                const response = await axios.get(url, {
+                    headers: getAuthHeaders(),
+                    ...options,
+                });
+                setData(response.data);
+            } catch (err) {
+                setError(err);
+            } finally {
+                setLoading(false);
             }
-        }
-        fetch()
-    }, [options])
-    return { apiData, Loading }
-}
+        };
 
-export default UseFetch
+        fetchData();
+    }, [url]);
+
+    return { data, loading, error };
+};
+
+export default useFetch;
