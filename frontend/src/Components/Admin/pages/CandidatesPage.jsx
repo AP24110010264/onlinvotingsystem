@@ -25,7 +25,7 @@ const CandidatesPage = () => {
         try {
             const [candidatesRes, electionsRes] = await Promise.all([
                 axios.get(api.getCandidates, { headers: getAuthHeaders() }),
-                axios.get(api.getActiveElections, { headers: getAuthHeaders() }),
+                axios.get(api.getElections, { headers: getAuthHeaders() }),
             ]);
             setCandidates(candidatesRes.data?.data || []);
             setActiveElections(electionsRes.data?.data || []);
