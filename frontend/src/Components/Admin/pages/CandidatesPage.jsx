@@ -48,8 +48,9 @@ const CandidatesPage = () => {
                 setCandidates([]);
             }
         } catch (error) {
-            console.error('Error fetching data:', error);
-            console.error('Error response:', error.response);
+            console.error('Error fetching data:', error.message);
+            console.error('Error response:', error.response?.data);
+            console.error('Error status:', error.response?.status);
         } finally {
             setIsLoading(false);
         }
