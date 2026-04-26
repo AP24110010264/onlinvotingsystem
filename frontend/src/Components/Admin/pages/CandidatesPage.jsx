@@ -7,6 +7,7 @@ const CandidatesPage = () => {
     const [elections, setElections] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [isModalLoading, setIsModalLoading] = useState(false);
     const [formData, setFormData] = useState({
         election_id: '',
         candidate_name: '',
@@ -18,42 +19,35 @@ const CandidatesPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchData();
+        fetchCandidates();
     }, []);
 
-    const fetchData = async () => {
+    const fetchCandidates = async () => {
         try {
-            console.log('Fetching data...');
-            console.log('Token being sent:', getAuthHeaders());
-            const token = getAuthHeaders();
-            console.log('Active elections URL:', api.getActiveElections);
-            console.log('Headers:', token);
-
-            const electionsRes = await axios.get(api.getActiveElections, { headers: token });
-            console.log('Elections response status:', electionsRes.status);
-            console.log('Elections response data:', electionsRes.data);
-
-            if (electionsRes.data && electionsRes.data.data) {
-                console.log('Setting elections to:', electionsRes.data.data);
-                setElections(electionsRes.data.data);
-            } else {
-                console.log('No data field in response');
-                setElections([]);
-            }
-
-            const candidatesRes = await axios.get(api.getCandidates, { headers: token });
-            if (candidatesRes.data && candidatesRes.data.data) {
-                setCandidates(candidatesRes.data.data);
-            } else {
-                setCandidates([]);
-            }
+            const candidatesRes = await axios.get(api.getCandidates, { headers: getAuthHeaders() });
+            setCandidates(candidatesRes.data?.data || []);
         } catch (error) {
-            console.error('Error fetching data:', error.message);
-            console.error('Error response:', error.response?.data);
-            console.error('Error status:', error.response?.status);
+            console.error('Error fetching candidates:', error);
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const fetchElections = async () => {
+        setIsModalLoading(true);
+        try {
+            const electionsRes = await axios.get(api.getActiveElections, { headers: getAuthHeaders() });
+            setElections(electionsRes.data?.data || []);
+        } catch (error) {
+            console.error('Error fetching elections:', error);
+        } finally {
+            setIsModalLoading(false);
+        }
+    };
+
+    const handleOpenModal = () => {
+        setShowModal(true);
+        fetchElections();
     };
 
     const handleChange = (e) => {
@@ -101,7 +95,7 @@ const CandidatesPage = () => {
             });
             setShowModal(false);
             setFormData({ election_id: '', candidate_name: '', candidate_contact: '', candidate_address: '', candidate_photo: '' });
-            fetchData();
+            fetchCandidates();
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to add candidate');
         } finally {
@@ -124,7 +118,7 @@ const CandidatesPage = () => {
                     <h2>Candidates</h2>
                     <p>Manage election candidates</p>
                 </div>
-                <button className="btn btn-primary" onClick={async () => { console.log('Opening modal, elections state:', elections); await fetchData(); setShowModal(true); }}>
+                <button className="btn btn-primary" onClick={handleOpenModal}>
                     Add Candidate
                 </button>
             </div>
@@ -192,70 +186,76 @@ const CandidatesPage = () => {
                             <h3>Add New Candidate</h3>
                             <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>&times;</button>
                         </div>
-                        <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Election (Debug: {elections?.length})</label>
-                                <select name="election_id" value={formData.election_id} onChange={handleChange}>
-                                    <option value="">Select Election</option>
-                                    {elections && elections.length > 0 ? elections.map((election) => (
-                                        <option key={election._id} value={election._id}>
-                                            {election.election_topic}
-                                        </option>
-                                    )) : <option disabled>No active elections</option>}
-                                </select>
-                                {errors.election_id && <span className="error-text">{errors.election_id}</span>}
+                        {isModalLoading ? (
+                            <div className="loading-spinner">
+                                <div className="spinner"></div>
                             </div>
-                            <div className="form-group">
-                                <label>Candidate Name</label>
-                                <input
-                                    type="text"
-                                    name="candidate_name"
-                                    value={formData.candidate_name}
-                                    onChange={handleChange}
-                                    placeholder="Enter candidate name"
-                                />
-                                {errors.candidate_name && <span className="error-text">{errors.candidate_name}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Address</label>
-                                <input
-                                    type="text"
-                                    name="candidate_address"
-                                    value={formData.candidate_address}
-                                    onChange={handleChange}
-                                    placeholder="Enter address"
-                                />
-                                {errors.candidate_address && <span className="error-text">{errors.candidate_address}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Contact</label>
-                                <input
-                                    type="text"
-                                    name="candidate_contact"
-                                    value={formData.candidate_contact}
-                                    onChange={handleChange}
-                                    placeholder="10-digit contact"
-                                    maxLength={10}
-                                />
-                                {errors.candidate_contact && <span className="error-text">{errors.candidate_contact}</span>}
-                            </div>
-                            <div className="form-group">
-                                <label>Photo</label>
-                                <input type="file" accept="image/*" onChange={handleImageChange} />
-                                {formData.candidate_photo && (
-                                    <img src={formData.candidate_photo} alt="Preview" style={{ width: '80px', height: '80px', borderRadius: '50%', marginTop: '0.5rem', objectFit: 'cover' }} />
-                                )}
-                                {errors.candidate_photo && <span className="error-text">{errors.candidate_photo}</span>}
-                            </div>
-                            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                                    {isSubmitting ? 'Adding...' : 'Add Candidate'}
-                                </button>
-                                <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ background: '#e5e7eb', color: '#374151' }}>
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
+                        ) : (
+                            <form onSubmit={handleSubmit}>
+                                <div className="form-group">
+                                    <label>Election</label>
+                                    <select name="election_id" value={formData.election_id} onChange={handleChange}>
+                                        <option value="">Select Election</option>
+                                        {elections && elections.length > 0 ? elections.map((election) => (
+                                            <option key={election._id} value={election._id}>
+                                                {election.election_topic}
+                                            </option>
+                                        )) : <option disabled>No active elections</option>}
+                                    </select>
+                                    {errors.election_id && <span className="error-text">{errors.election_id}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Candidate Name</label>
+                                    <input
+                                        type="text"
+                                        name="candidate_name"
+                                        value={formData.candidate_name}
+                                        onChange={handleChange}
+                                        placeholder="Enter candidate name"
+                                    />
+                                    {errors.candidate_name && <span className="error-text">{errors.candidate_name}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Address</label>
+                                    <input
+                                        type="text"
+                                        name="candidate_address"
+                                        value={formData.candidate_address}
+                                        onChange={handleChange}
+                                        placeholder="Enter address"
+                                    />
+                                    {errors.candidate_address && <span className="error-text">{errors.candidate_address}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Contact</label>
+                                    <input
+                                        type="text"
+                                        name="candidate_contact"
+                                        value={formData.candidate_contact}
+                                        onChange={handleChange}
+                                        placeholder="10-digit contact"
+                                        maxLength={10}
+                                    />
+                                    {errors.candidate_contact && <span className="error-text">{errors.candidate_contact}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label>Photo</label>
+                                    <input type="file" accept="image/*" onChange={handleImageChange} />
+                                    {formData.candidate_photo && (
+                                        <img src={formData.candidate_photo} alt="Preview" style={{ width: '80px', height: '80px', borderRadius: '50%', marginTop: '0.5rem', objectFit: 'cover' }} />
+                                    )}
+                                    {errors.candidate_photo && <span className="error-text">{errors.candidate_photo}</span>}
+                                </div>
+                                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                    <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                                        {isSubmitting ? 'Adding...' : 'Add Candidate'}
+                                    </button>
+                                    <button type="button" className="btn" onClick={() => setShowModal(false)} style={{ background: '#e5e7eb', color: '#374151' }}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}
