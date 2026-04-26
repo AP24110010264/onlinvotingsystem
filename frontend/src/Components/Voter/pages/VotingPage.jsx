@@ -15,12 +15,15 @@ const VotingPage = () => {
 
     const fetchData = async () => {
         try {
-            const [candidatesRes, votersRes] = await Promise.all([
-                axios.get(api.getElectionCandidates, { headers: getAuthHeaders() }),
-                axios.get(api.getVoters, { headers: getAuthHeaders() }),
-            ]);
+            const candidatesRes = await axios.get(api.getElectionCandidates, { headers: getAuthHeaders() });
             setCandidates(candidatesRes.data?.data || []);
-            setVoters(votersRes.data?.data || []);
+
+            try {
+                const votersRes = await axios.get(api.getVoters, { headers: getAuthHeaders() });
+                setVoters(votersRes.data?.data || []);
+            } catch {
+                setVoters([]);
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {

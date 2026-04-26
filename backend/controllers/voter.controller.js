@@ -4,8 +4,12 @@ const candidates = require('../models/candidate.model')
 
 
 const getElectionCandidates = async (req, res, next) => {
-    const today = new Date();       //today's date
-    await elections.updateMany({ ending_date: { $lt: today } }, { $set: { status: "expired" } }).lean();
+    const today = new Date();
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    await elections.updateMany(
+        { ending_date: { $lt: todayOnly } },
+        { $set: { status: "expired" } }
+    ).lean();
     const activeElection = await elections.find({ status: 'active' }).sort({ starting_date: 1 }).limit(1).lean();
     let updatedElectionCandidates = [];
 

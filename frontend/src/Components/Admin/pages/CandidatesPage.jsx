@@ -76,7 +76,6 @@ const CandidatesPage = () => {
         if (!data.candidate_contact) newErrors.candidate_contact = 'Contact is required';
         else if (!/^\d{10}$/.test(data.candidate_contact)) newErrors.candidate_contact = 'Must be 10 digits';
         if (!data.candidate_address) newErrors.candidate_address = 'Address is required';
-        if (!data.candidate_photo) newErrors.candidate_photo = 'Photo is required';
         return newErrors;
     };
 

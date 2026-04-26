@@ -20,6 +20,7 @@ const ElectionsPage = () => {
     }, []);
 
     const fetchElections = async () => {
+        setIsLoading(true);
         try {
             const response = await axios.get(api.getElections, { headers: getAuthHeaders() });
             setElections(response.data?.data || []);
@@ -86,10 +87,14 @@ const ElectionsPage = () => {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
+        }) + ' ' + date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
         });
     };
 

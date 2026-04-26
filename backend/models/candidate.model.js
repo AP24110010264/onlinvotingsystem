@@ -18,7 +18,7 @@ let candidateSchema = new mongoose.Schema({
         type: String
     },
     candidate_photo: {
-        required: true,
+        required: false,
         type: String
     }
 }, {

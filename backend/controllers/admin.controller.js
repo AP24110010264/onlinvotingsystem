@@ -66,23 +66,25 @@ let userLogin = async (req, res, next) => {
 let addElection = async (req, res, next) => {
     try {
         let { election_id, election_topic, no_of_candidates, starting_date, ending_date, status } = req.body
-        starting_date = new Date(starting_date)
-        ending_date = new Date(ending_date)
+        const startDateObj = new Date(starting_date);
+        const endDateObj = new Date(ending_date);
         const today = new Date();
 
-        if (starting_date > ending_date) {
+        const startDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endDateOnly = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate());
+        const electionStartDateOnly = new Date(startDateObj.getFullYear(), startDateObj.getMonth(), startDateObj.getDate());
+
+        if (electionStartDateOnly > endDateOnly) {
             return res.status(400).json({ error: true, message: "Starting date must be before ending date" })
         }
 
-        if (today > ending_date) {
+        if (startDateOnly > endDateOnly) {
             status = "expired";
-        } else if (today >= starting_date) {
-            status = "active";
         } else {
             status = "active";
         }
 
-        let election = await elections.create({ election_id, election_topic, no_of_candidates, starting_date, ending_date, status })
+        let election = await elections.create({ election_id, election_topic, no_of_candidates, starting_date: startDateObj, ending_date: endDateObj, status })
         res.status(200).json({ error: false, message: "added successfully" })
     } catch (error) {
         console.log(error);
@@ -105,9 +107,6 @@ let addCandidate = async (req, res, next) => {
         }
         if (!candidate_contact) {
             return res.status(400).json({ error: true, message: 'Candidate contact is mandatory' });
-        }
-        if (!candidate_photo) {
-            return res.status(400).json({ error: true, message: 'Candidate photo is mandatory' });
         }
 
         const isElectionAvailable = await elections.findById(election_id);
@@ -157,7 +156,11 @@ const getElections = async (req, res, next) => {
 const getActiveElections = async (req, res, next) => {
     try {
         const today = new Date();
-        await elections.updateMany({ ending_date: { $lt: today } }, { $set: { status: "expired" } }).lean();
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        await elections.updateMany(
+            { ending_date: { $lt: todayOnly } },
+            { $set: { status: "expired" } }
+        ).lean();
         const activeElections = await elections.find({ status: "active" });
         if (activeElections.length > 0) {
             return res.status(200).json({ error: false, message: 'active elections fetched succesfully', data: activeElections })
