@@ -4,7 +4,7 @@ import api, { getAuthHeaders } from '../../../config/api';
 
 const CandidatesPage = () => {
     const [candidates, setCandidates] = useState([]);
-    const [activeElections, setActiveElections] = useState([]);
+    const [elections, setElections] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -25,10 +25,10 @@ const CandidatesPage = () => {
         try {
             const [candidatesRes, electionsRes] = await Promise.all([
                 axios.get(api.getCandidates, { headers: getAuthHeaders() }),
-                axios.get(api.getElections, { headers: getAuthHeaders() }),
+                axios.get(api.getActiveElections, { headers: getAuthHeaders() }),
             ]);
             setCandidates(candidatesRes.data?.data || []);
-            setActiveElections(electionsRes.data?.data || []);
+            setElections(electionsRes.data?.data || []);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -177,11 +177,11 @@ const CandidatesPage = () => {
                                 <label>Election</label>
                                 <select name="election_id" value={formData.election_id} onChange={handleChange}>
                                     <option value="">Select Election</option>
-                                    {activeElections.map((election) => (
+                                    {elections && elections.length > 0 ? elections.map((election) => (
                                         <option key={election._id} value={election._id}>
                                             {election.election_topic}
                                         </option>
-                                    ))}
+                                    )) : <option disabled>No active elections</option>}
                                 </select>
                                 {errors.election_id && <span className="error-text">{errors.election_id}</span>}
                             </div>

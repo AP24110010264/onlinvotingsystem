@@ -76,6 +76,8 @@ let addElection = async (req, res, next) => {
 
         if (today > ending_date) {
             status = "expired";
+        } else if (today >= starting_date) {
+            status = "active";
         } else {
             status = "active";
         }
