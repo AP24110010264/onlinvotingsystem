@@ -1,5 +1,6 @@
 const express = require('express')
 const connectDB = require('./helpers/connectDB')
+const cors = require('cors')
 let onlineVotingRoutes = require('./routes/onlinevoting.route');
 let votingRoutes = require('./routes/voter.route')
 require('dotenv').config()
@@ -7,26 +8,20 @@ require('dotenv').config()
 const port = process.env.PORT || 4000;
 
 let app = express()
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}))
 
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
-});
+app.use(express.json({ limit: "10mb" }))
 
-app.use(express.json({ limit: "10mb" }))     
-
-app.use(express.json({ limit: "10mb" }))     
-let startingServer = async () => {     
+let startingServer = async () => {
     try {
-        await connectDB(process.env.MONGODB_URL)      
+        await connectDB(process.env.MONGODB_URL)
         console.log("database connected successfully");
-        app.listen(port, () => {      
+        app.listen(port, () => {
             console.log("server is running");
         })
     } catch (error) {
