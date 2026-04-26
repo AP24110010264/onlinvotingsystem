@@ -63,19 +63,23 @@ let userLogin = async (req, res, next) => {
     }
 }
 
-let addElection = async (req, res, next) => {       //create election controller
+let addElection = async (req, res, next) => {
     try {
         let { election_id, election_topic, no_of_candidates, starting_date, ending_date, status } = req.body
         starting_date = new Date(starting_date)
         ending_date = new Date(ending_date)
         const today = new Date();
-        // let today = String(day.getFullYear()) + "-" + String(day.getMonth()).padStart(2, 0) + "-" + String(day.getDate()).padStart(2, 0);
 
-        if (today > ending_date && starting_date > ending_date) {
-            return res.status(400).json({ error: true, message: "starting date is greater than the ending date" })
+        if (starting_date > ending_date) {
+            return res.status(400).json({ error: true, message: "Starting date must be before ending date" })
+        }
+
+        if (today > ending_date) {
+            status = "expired";
         } else {
             status = "active";
         }
+
         let election = await elections.create({ election_id, election_topic, no_of_candidates, starting_date, ending_date, status })
         res.status(200).json({ error: false, message: "added successfully" })
     } catch (error) {

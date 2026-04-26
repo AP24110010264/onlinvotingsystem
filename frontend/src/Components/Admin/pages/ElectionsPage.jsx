@@ -41,7 +41,6 @@ const ElectionsPage = () => {
     const validateForm = (data) => {
         const newErrors = {};
         if (!data.election_topic) newErrors.election_topic = 'Election topic is required';
-        if (!data.no_of_candidates) newErrors.no_of_candidates = 'Number of candidates is required';
         if (!data.starting_date) newErrors.starting_date = 'Starting date is required';
         if (!data.ending_date) newErrors.ending_date = 'Ending date is required';
         if (new Date(data.starting_date) > new Date(data.ending_date)) {
